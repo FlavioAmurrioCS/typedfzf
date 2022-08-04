@@ -6,6 +6,7 @@ import itertools
 import shutil
 import subprocess
 import sys
+import typing
 from typing import Callable
 from typing import Iterable
 from typing import NamedTuple
@@ -161,7 +162,7 @@ class FzfOptions(NamedTuple):
     query: str | None = None
 
     #     -1, --select-1        Automatically select the only match
-    select_one: bool = False
+    # select_one: bool = False
 
     #     -0, --exit-0          Exit immediately when there's no match
     exit_zero: bool = True
@@ -180,7 +181,7 @@ class FzfOptions(NamedTuple):
     #     FZF_DEFAULT_COMMAND   Default command to use when input is tty
     #     FZF_DEFAULT_OPTS      Default options
     #                           (e.g. '--layout=reverse --inline-info')
-    def command(self, multi: bool, fzf_executable: str | None) -> tuple[str, ...]:
+    def command(self, *, multi: bool, select_one: bool, fzf_executable: str | None) -> tuple[str, ...]:
         executable = fzf_executable or self.fzf_executable or shutil.which('fzf')
         if executable is None:
             print('No fzf executable found in PATH', file=sys.stderr)
@@ -215,7 +216,7 @@ class FzfOptions(NamedTuple):
         # Interface
         if multi:
             cmd.append('--multi')
-            header = f'{header or ""}(MULTI SELECTED)'
+            header = f'{header or ""}(MULTI SELECTED)({self.bind})'
 
         if self.no_mouse:
             cmd.append('--no-mouse')
@@ -266,7 +267,7 @@ class FzfOptions(NamedTuple):
         # Scripting
         if self.query is not None:
             cmd.append(f'--query={self.query}')
-        if self.select_one:
+        if select_one:
             cmd.append('--select-1')
         if self.exit_zero:
             cmd.append('--exit-0')
@@ -278,10 +279,11 @@ class FzfOptions(NamedTuple):
 def fzf(
     iterable: Iterable[T],
     *,
-    key: Callable[[T], str] | None = None,
     multi: Literal[False] = False,
-    fzf_executable: str | None = None,
-    options: FzfOptions | None = None,
+    select_one: bool = ...,
+    key: Callable[[T], str] | None = ...,
+    fzf_executable: str | None = ...,
+    options: FzfOptions | None = ...,
 ) -> T | None:
     ...
 
@@ -290,10 +292,11 @@ def fzf(
 def fzf(
     iterable: Iterable[T],
     *,
-    key: Callable[[T], str] | None = None,
     multi: Literal[True] = True,
-    fzf_executable: str | None = None,
-    options: FzfOptions | None = None,
+    select_one: bool = ...,
+    key: Callable[[T], str] | None = ...,
+    fzf_executable: str | None = ...,
+    options: FzfOptions | None = ...,
 ) -> list[T]:
     ...
 
@@ -301,33 +304,33 @@ def fzf(
 def fzf(
     iterable: Iterable[T],
     *,
-    key: Callable[[T], str] | None = None,
     multi: bool = False,
+    select_one: bool = True,
+    key: Callable[[T], str] | None = None,
     fzf_executable: str | None = None,
     options: FzfOptions | None = None,
 ) -> T | None | list[T]:
 
     options = options or FzfOptions()
-    cmd = options.command(multi, fzf_executable)
-
-    # print(' '.join(shlex.quote(x) for x in cmd))
-    # raise SystemExit(0)
+    cmd = options.command(multi=multi, select_one=select_one, fzf_executable=fzf_executable)
 
     empty_return: None | list[T] = [] if multi else None
     sentinel = object()
     iterator = iter(iterable)
-    first_item = next(iterator, sentinel)
-    if first_item == sentinel:
-        # Empty List
+    _first_item = next(iterator, sentinel)
+    if _first_item == sentinel:
         return empty_return
+    first_item: T = typing.cast(T, _first_item)
 
-    if options.select_one:
-        second_item = next(iterator, sentinel)
-        if second_item == sentinel:
-            return first_item  # type:ignore
-        full_stream: Iterable[T] = itertools.chain((first_item, second_item), iterator)  # type: ignore
+    full_stream: Iterable[T]
+    if select_one:
+        _second_item = next(iterator, sentinel)
+        if _second_item == sentinel:
+            return [first_item] if multi else first_item
+        second_item: T = typing.cast(T, _second_item)
+        full_stream = itertools.chain((first_item, second_item), iterator)
     else:
-        full_stream: Iterable[T] = itertools.chain((first_item,), iterator)  # type: ignore
+        full_stream = itertools.chain((first_item,), iterator)
 
     dct: dict[str, T] = {}
 
@@ -342,7 +345,7 @@ def fzf(
     elif not isinstance(first_item, str):
         _iterable = (__inner__(x, str) for x in full_stream)
     else:
-        _iterable = full_stream  # type: ignore
+        _iterable = typing.cast(Iterable[str], full_stream)
 
     proc = subprocess.Popen(
         cmd,
@@ -382,8 +385,5 @@ def fzf(
     if len(lines) == 0:
         return empty_return
 
-    if not dct:
-        return lines if multi else lines[0]  # type: ignore
-
-    converted = [dct[x] for x in lines]
+    converted: list[T] = [dct[x] for x in lines] if dct else lines  # type:ignore
     return converted if multi else converted[0]
