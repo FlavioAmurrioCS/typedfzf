@@ -132,7 +132,8 @@ def select_helper(*, cmd: _CMD, items: Iterable[T], multi: bool = False, select_
     if not lines:
         return empty_return
 
-    converted: list[T] = [dct[x] for x in lines] if dct else lines  # type:ignore
+    converted: list[T] = [dct[x]
+                          for x in lines] if dct else lines  # type:ignore
     return converted if multi else converted[0]
 
 
