@@ -1,5 +1,0 @@
-autopep8
-covdefaults
-coverage
-pre-commit
-pytest
