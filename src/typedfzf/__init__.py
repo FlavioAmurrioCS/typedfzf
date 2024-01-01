@@ -28,16 +28,21 @@ def piped_exec(
     Executes a command with input from an iterable and returns the output as a list of strings.
 
     Args:
+    ----
         cmd (_CMD): The command to execute.
         iterable (Iterable[str]): An iterable containing the input to be passed to the command.
 
     Returns:
+    -------
         list[str]: A list of strings representing the output of the command.
     """
     empty_return: list[str] = []
     proc = subprocess.Popen(
-        args=cmd, stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE, stderr=None, encoding='utf-8',
+        args=cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=None,
+        encoding="utf-8",
     )
 
     stdin = proc.stdin
@@ -47,16 +52,16 @@ def piped_exec(
 
     for line in iterable:
         try:
-            stdin.write(line + '\n')
+            stdin.write(line + "\n")
             stdin.flush()
-        except OSError as os_error:
-            if os_error.errno != errno.EPIPE and errno.EPIPE != 32:
+        except OSError as os_error:  # noqa: PERF203
+            if errno.EPIPE not in (os_error.errno, 32):
                 raise
             break
     try:
         stdin.close()
     except OSError as os_error:
-        if os_error.errno != errno.EPIPE and errno.EPIPE != 32:
+        if errno.EPIPE not in (os_error.errno, 32):
             raise
     if proc.wait() not in [0, 1]:
         return empty_return
@@ -67,24 +72,46 @@ def piped_exec(
     return [line[:-1] for line in stdout]
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @overload
-def select_helper(*, cmd: _CMD, items: Iterable[T], multi: Literal[True], select_one: bool = True, key: Callable[[T], str] | None = None) -> list[T]:
+def select_helper(
+    *,
+    cmd: _CMD,
+    items: Iterable[T],
+    multi: Literal[True],
+    select_one: bool = True,
+    key: Callable[[T], str] | None = None,
+) -> list[T]:
     ...
 
 
 @overload
-def select_helper(*, cmd: _CMD, items: Iterable[T], multi: Literal[False], select_one: bool = True, key: Callable[[T], str] | None = None) -> T | None:
+def select_helper(
+    *,
+    cmd: _CMD,
+    items: Iterable[T],
+    multi: Literal[False],
+    select_one: bool = True,
+    key: Callable[[T], str] | None = None,
+) -> T | None:
     ...
 
 
-def select_helper(*, cmd: _CMD, items: Iterable[T], multi: bool = False, select_one: bool = True, key: Callable[[T], str] | None = None) -> list[T] | T | None:
+def select_helper(
+    *,
+    cmd: _CMD,
+    items: Iterable[T],
+    multi: bool = False,
+    select_one: bool = True,
+    key: Callable[[T], str] | None = None,
+) -> list[T] | T | None:
     """
     Helper function to select items from a list using a command line tool.
 
     Args:
+    ----
         cmd (str): The command line tool to use for selection.
         items (Iterable[T]): The items to select from.
         multi (bool, optional): Whether to allow multiple selections. Defaults to False.
@@ -92,8 +119,9 @@ def select_helper(*, cmd: _CMD, items: Iterable[T], multi: bool = False, select_
         key (Callable[[T], str] | None, optional): A function to extract a key from each item. Defaults to None.
 
     Returns:
+    -------
         list[T] | T | None: The selected item(s).
-    """
+    """  # noqa: E501
     empty_return: None | list[T] = [] if multi else None
     sentinel = object()
     iterator = iter(items)
@@ -114,16 +142,16 @@ def select_helper(*, cmd: _CMD, items: Iterable[T], multi: bool = False, select_
 
     dct: dict[str, T] = {}
 
-    def __inner__(t: T, func: Callable[[T], str]) -> str:
+    def _inner_(t: T, func: Callable[[T], str]) -> str:
         _key = func(t)
         dct[_key] = t
         return _key
 
     _iterable: Iterable[str]
     if key is not None:
-        _iterable = (__inner__(x, key) for x in full_stream)
+        _iterable = (_inner_(x, key) for x in full_stream)
     elif not isinstance(first_item, str):
-        _iterable = (__inner__(x, str) for x in full_stream)
+        _iterable = (_inner_(x, str) for x in full_stream)
     else:
         _iterable = typing.cast(Iterable[str], full_stream)
 
@@ -132,10 +160,7 @@ def select_helper(*, cmd: _CMD, items: Iterable[T], multi: bool = False, select_
     if not lines:
         return empty_return
 
-    converted: list[T] = [
-        dct[x]
-        for x in lines
-    ] if dct else lines  # type:ignore
+    converted: list[T] = [dct[x] for x in lines] if dct else lines  # type:ignore
     return converted if multi else converted[0]
 
 
@@ -258,7 +283,7 @@ class _FzfOptions(TypedDict, total=False):
     extended: bool
     exact: bool
     case_sensitive: bool
-    scheme: Literal['default', 'path', 'history']
+    scheme: Literal["default", "path", "history"]
     literal: bool
     nth: str
     with_nth: str
@@ -267,7 +292,7 @@ class _FzfOptions(TypedDict, total=False):
     track: bool
     tac: bool
     disabled: bool
-    tiebreak: list[Literal['length', 'chunk', 'begin', 'end', 'index']]
+    tiebreak: list[Literal["length", "chunk", "begin", "end", "index"]]
 
     # Interface
     # multi: int
@@ -284,16 +309,27 @@ class _FzfOptions(TypedDict, total=False):
     # Layout
     height: str
     min_height: int
-    layout: Literal['default', 'reverse', 'reverse-list']
+    layout: Literal["default", "reverse", "reverse-list"]
     border: Literal[
-        'rounded', 'sharp', 'bold', 'block', 'thinblock', 'double',
-        'horizontal', 'vertical', 'top', 'bottom', 'left', 'right', 'none',
+        "rounded",
+        "sharp",
+        "bold",
+        "block",
+        "thinblock",
+        "double",
+        "horizontal",
+        "vertical",
+        "top",
+        "bottom",
+        "left",
+        "right",
+        "none",
     ]
     border_label: str
     border_label_pos: str
     margin: str
     padding: str
-    info: Literal['default', 'right', 'hidden', 'inline', 'inline-right']
+    info: Literal["default", "right", "hidden", "inline", "inline-right"]
     separator: str
     no_separator: bool
     scrollbar: str
@@ -336,149 +372,149 @@ class _FzfOptions(TypedDict, total=False):
     additional_args: Sequence[str]
 
 
-def _fzf_options(kwargs: _FzfOptions) -> list[str]:
+def _fzf_options(kwargs: _FzfOptions) -> list[str]:  # noqa: C901, PLR0915, PLR0912
     cmd = []
     # Search
-    if 'extended' in kwargs:
+    if "extended" in kwargs:
         cmd.append(f'--{"" if kwargs["extended"] else "no-"}extended')
-    if kwargs.get('exact'):
-        cmd.append('--exact')
-    if 'case_sensitive' in kwargs:
+    if kwargs.get("exact"):
+        cmd.append("--exact")
+    if "case_sensitive" in kwargs:
         cmd.append(f'{"+" if kwargs["case_sensitive"] else "-"}i')
-    if 'scheme' in kwargs:
+    if "scheme" in kwargs:
         cmd.append(f'--scheme={kwargs["scheme"]}')
-    if kwargs.get('literal'):
-        cmd.append('--literal')
-    if 'nth' in kwargs and kwargs['nth']:
+    if kwargs.get("literal"):
+        cmd.append("--literal")
+    if "nth" in kwargs and kwargs["nth"]:
         cmd.append(f'--nth={kwargs["nth"]}')
-    if 'with_nth' in kwargs and kwargs['with_nth']:
+    if "with_nth" in kwargs and kwargs["with_nth"]:
         cmd.append(f'--with-nth={kwargs["with_nth"]}')
-    if 'delimiter' in kwargs and kwargs['delimiter']:
+    if "delimiter" in kwargs and kwargs["delimiter"]:
         cmd.append(f'--delimiter={kwargs["delimiter"]}')
-    if kwargs.get('no_sort'):
-        cmd.append('--no-sort')
-    if kwargs.get('track'):
-        cmd.append('--track')
-    if kwargs.get('tac'):
-        cmd.append('--tac')
-    if kwargs.get('disabled'):
-        cmd.append('--disabled')
-    if 'tiebreak' in kwargs and kwargs['tiebreak']:
+    if kwargs.get("no_sort"):
+        cmd.append("--no-sort")
+    if kwargs.get("track"):
+        cmd.append("--track")
+    if kwargs.get("tac"):
+        cmd.append("--tac")
+    if kwargs.get("disabled"):
+        cmd.append("--disabled")
+    if "tiebreak" in kwargs and kwargs["tiebreak"]:
         cmd.append(f'--tiebreak={",".join(kwargs["tiebreak"])}')
 
     # Interface
     # if 'multi' in kwargs and kwargs['multi']:
     #     cmd.append(f'--multi={kwargs["multi"]}')
-    if kwargs.get('no_mouse'):
-        cmd.append('--no-mouse')
-    if 'bind' in kwargs and kwargs['bind']:
+    if kwargs.get("no_mouse"):
+        cmd.append("--no-mouse")
+    if "bind" in kwargs and kwargs["bind"]:
         cmd.append(f'--bind={kwargs["bind"]}')
-    if kwargs.get('cycle'):
-        cmd.append('--cycle')
-    if kwargs.get('keep_right'):
-        cmd.append('--keep-right')
-    if 'scroll_off' in kwargs and kwargs['scroll_off']:
+    if kwargs.get("cycle"):
+        cmd.append("--cycle")
+    if kwargs.get("keep_right"):
+        cmd.append("--keep-right")
+    if "scroll_off" in kwargs and kwargs["scroll_off"]:
         cmd.append(f'--scroll-off={kwargs["scroll_off"]}')
-    if kwargs.get('no_hscroll'):
-        cmd.append('--no-hscroll')
-    if 'hscroll_off' in kwargs and kwargs['hscroll_off']:
+    if kwargs.get("no_hscroll"):
+        cmd.append("--no-hscroll")
+    if "hscroll_off" in kwargs and kwargs["hscroll_off"]:
         cmd.append(f'--hscroll-off={kwargs["hscroll_off"]}')
-    if kwargs.get('filepath_word'):
-        cmd.append('--filepath-word')
-    if 'jump_labels' in kwargs and kwargs['jump_labels']:
+    if kwargs.get("filepath_word"):
+        cmd.append("--filepath-word")
+    if "jump_labels" in kwargs and kwargs["jump_labels"]:
         cmd.append(f'--jump-labels={kwargs["jump_labels"]}')
 
     # Layout
-    if 'height' in kwargs and kwargs['height']:
+    if "height" in kwargs and kwargs["height"]:
         cmd.append(f'--height={kwargs["height"]}')
-    if 'min_height' in kwargs and kwargs['min_height']:
+    if "min_height" in kwargs and kwargs["min_height"]:
         cmd.append(f'--min-height={kwargs["min_height"]}')
-    if 'layout' in kwargs and kwargs['layout']:
+    if "layout" in kwargs and kwargs["layout"]:
         cmd.append(f'--layout={kwargs["layout"]}')
-    if 'border' in kwargs and kwargs['border']:
+    if "border" in kwargs and kwargs["border"]:
         cmd.append(f'--border={kwargs["border"]}')
-    if 'border_label' in kwargs and kwargs['border_label']:
+    if "border_label" in kwargs and kwargs["border_label"]:
         cmd.append(f'--border-label={kwargs["border_label"]}')
-    if 'border_label_pos' in kwargs and kwargs['border_label_pos']:
+    if "border_label_pos" in kwargs and kwargs["border_label_pos"]:
         cmd.append(f'--border-label-pos={kwargs["border_label_pos"]}')
-    if 'margin' in kwargs and kwargs['margin']:
+    if "margin" in kwargs and kwargs["margin"]:
         cmd.append(f'--margin={kwargs["margin"]}')
-    if 'padding' in kwargs and kwargs['padding']:
+    if "padding" in kwargs and kwargs["padding"]:
         cmd.append(f'--padding={kwargs["padding"]}')
-    if 'info' in kwargs and kwargs['info']:
+    if "info" in kwargs and kwargs["info"]:
         cmd.append(f'--info={kwargs["info"]}')
-    if 'separator' in kwargs and kwargs['separator']:
+    if "separator" in kwargs and kwargs["separator"]:
         cmd.append(f'--separator={kwargs["separator"]}')
-    if kwargs.get('no_separator'):
-        cmd.append('--no-separator')
-    if 'scrollbar' in kwargs and kwargs['scrollbar']:
+    if kwargs.get("no_separator"):
+        cmd.append("--no-separator")
+    if "scrollbar" in kwargs and kwargs["scrollbar"]:
         cmd.append(f'--scrollbar={kwargs["scrollbar"]}')
-    if kwargs.get('no_scrollbar'):
-        cmd.append('--no-scrollbar')
-    if 'prompt' in kwargs and kwargs['prompt']:
+    if kwargs.get("no_scrollbar"):
+        cmd.append("--no-scrollbar")
+    if "prompt" in kwargs and kwargs["prompt"]:
         cmd.append(f'--prompt={kwargs["prompt"]}')
-    if 'pointer' in kwargs and kwargs['pointer']:
+    if "pointer" in kwargs and kwargs["pointer"]:
         cmd.append(f'--pointer={kwargs["pointer"]}')
-    if 'marker' in kwargs and kwargs['marker']:
+    if "marker" in kwargs and kwargs["marker"]:
         cmd.append(f'--marker={kwargs["marker"]}')
-    if 'header' in kwargs and kwargs['header']:
+    if "header" in kwargs and kwargs["header"]:
         cmd.append(f'--header={kwargs["header"]}')
-    if 'header_lines' in kwargs and kwargs['header_lines']:
+    if "header_lines" in kwargs and kwargs["header_lines"]:
         cmd.append(f'--header-lines={kwargs["header_lines"]}')
-    if kwargs.get('header_first'):
-        cmd.append('--header-first')
-    if 'ellipsis' in kwargs and kwargs['ellipsis']:
+    if kwargs.get("header_first"):
+        cmd.append("--header-first")
+    if "ellipsis" in kwargs and kwargs["ellipsis"]:
         cmd.append(f'--ellipsis={kwargs["ellipsis"]}')
 
     # Display
-    if kwargs.get('ansi'):
-        cmd.append('--ansi')
-    if 'tabstop' in kwargs and kwargs['tabstop']:
+    if kwargs.get("ansi"):
+        cmd.append("--ansi")
+    if "tabstop" in kwargs and kwargs["tabstop"]:
         cmd.append(f'--tabstop={kwargs["tabstop"]}')
-    if 'color' in kwargs and kwargs['color']:
+    if "color" in kwargs and kwargs["color"]:
         cmd.append(f'--color={kwargs["color"]}')
-    if kwargs.get('no_bold'):
-        cmd.append('--no-bold')
+    if kwargs.get("no_bold"):
+        cmd.append("--no-bold")
 
     # History
-    if 'history' in kwargs and kwargs['history']:
+    if "history" in kwargs and kwargs["history"]:
         cmd.append(f'--history={kwargs["history"]}')
-    if 'history_size' in kwargs and kwargs['history_size']:
+    if "history_size" in kwargs and kwargs["history_size"]:
         cmd.append(f'--history-size={kwargs["history_size"]}')
 
     # Preview
-    if 'preview' in kwargs and kwargs['preview']:
+    if "preview" in kwargs and kwargs["preview"]:
         cmd.append(f'--preview={kwargs["preview"]}')
-    if 'preview_window' in kwargs and kwargs['preview_window']:
+    if "preview_window" in kwargs and kwargs["preview_window"]:
         cmd.append(f'--preview-window={kwargs["preview_window"]}')
-    if 'preview_label' in kwargs and kwargs['preview_label']:
+    if "preview_label" in kwargs and kwargs["preview_label"]:
         cmd.append(f'--preview-label={kwargs["preview_label"]}')
-    if 'preview_label_pos' in kwargs and kwargs['preview_label_pos']:
+    if "preview_label_pos" in kwargs and kwargs["preview_label_pos"]:
         cmd.append(f'--preview-label-pos={kwargs["preview_label_pos"]}')
 
     # Scripting
-    if 'query' in kwargs and kwargs['query']:
+    if "query" in kwargs and kwargs["query"]:
         cmd.append(f'--query={kwargs["query"]}')
-    if kwargs.get('select_1'):
-        cmd.append('--select-1')
-    if kwargs.get('exit_0'):
-        cmd.append('--exit-0')
-    if 'filter' in kwargs and kwargs['filter']:
+    if kwargs.get("select_1"):
+        cmd.append("--select-1")
+    if kwargs.get("exit_0"):
+        cmd.append("--exit-0")
+    if "filter" in kwargs and kwargs["filter"]:
         cmd.append(f'--filter={kwargs["filter"]}')
-    if kwargs.get('print_query'):
-        cmd.append('--print-query')
-    if 'expect' in kwargs and kwargs['expect']:
+    if kwargs.get("print_query"):
+        cmd.append("--print-query")
+    if "expect" in kwargs and kwargs["expect"]:
         cmd.append(f'--expect={kwargs["expect"]}')
-    if kwargs.get('read0'):
-        cmd.append('--read0')
-    if kwargs.get('print0'):
-        cmd.append('--print0')
-    if kwargs.get('sync'):
-        cmd.append('--sync')
-    if 'listen' in kwargs and kwargs['listen']:
+    if kwargs.get("read0"):
+        cmd.append("--read0")
+    if kwargs.get("print0"):
+        cmd.append("--print0")
+    if kwargs.get("sync"):
+        cmd.append("--sync")
+    if "listen" in kwargs and kwargs["listen"]:
         cmd.append(f'--listen={kwargs["listen"]}')
-    if 'additional_args' in kwargs and kwargs['additional_args']:
-        cmd.extend(kwargs['additional_args'])
+    if "additional_args" in kwargs and kwargs["additional_args"]:
+        cmd.extend(kwargs["additional_args"])
     return cmd
 
 
@@ -514,13 +550,12 @@ def fzf(
     key: Callable[[T], str] | None = None,
     _options: _FzfOptions | None = None,
 ) -> T | None | list[T]:
-
     _options = _options or {}
 
-    _options['select_1'] = select_one
-    cmd = ['fzf', *(_fzf_options(_options))]
+    _options["select_1"] = select_one
+    cmd = ["fzf", *(_fzf_options(_options))]
     if multi:
-        cmd.append('--multi')
+        cmd.append("--multi")
 
     return select_helper(
         cmd=cmd,
