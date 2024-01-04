@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 from __future__ import annotations
 
-from typedfzf import fzf
+from fzf import fzf
 
 
 if __name__ == "__main__":

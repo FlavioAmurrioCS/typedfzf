@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -34,12 +34,16 @@ Issues = "https://github.com/FlavioAmurrioCS/typedfzf/issues"
 Source = "https://github.com/FlavioAmurrioCS/typedfzf"
 
 [tool.hatch.version]
-path = "src/typedfzf/__about__.py"
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/fzf/_version.py"
 
 [tool.hatch.envs.default]
 dependencies = [
   "coverage[toml]>=6.5",
   "pytest",
+  "setuptools-scm",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
@@ -83,8 +87,15 @@ exclude_lines = [
   "if TYPE_CHECKING:",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/fzf"]
+
 # COMMON SETTINGS BELOW
+[tool.pyright]
+pythonVersion = "3.8"
+
 [tool.mypy]
+python_version = "3.8"
 check_untyped_defs = true
 disallow_any_generics = true
 disallow_incomplete_defs = true
