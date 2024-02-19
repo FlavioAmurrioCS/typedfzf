@@ -35,6 +35,7 @@ def piped_exec(
     Returns:
     -------
         list[str]: A list of strings representing the output of the command.
+
     """
     empty_return: list[str] = []
     proc = subprocess.Popen(
@@ -121,6 +122,7 @@ def select_helper(
     Returns:
     -------
         list[T] | T | None: The selected item(s).
+
     """  # noqa: E501
     empty_return: None | list[T] = [] if multi else None
     sentinel = object()
@@ -385,11 +387,11 @@ def _fzf_options(kwargs: _FzfOptions) -> list[str]:  # noqa: C901, PLR0915, PLR0
         cmd.append(f'--scheme={kwargs["scheme"]}')
     if kwargs.get("literal"):
         cmd.append("--literal")
-    if "nth" in kwargs and kwargs["nth"]:
+    if kwargs.get("nth"):
         cmd.append(f'--nth={kwargs["nth"]}')
-    if "with_nth" in kwargs and kwargs["with_nth"]:
+    if kwargs.get("with_nth"):
         cmd.append(f'--with-nth={kwargs["with_nth"]}')
-    if "delimiter" in kwargs and kwargs["delimiter"]:
+    if kwargs.get("delimiter"):
         cmd.append(f'--delimiter={kwargs["delimiter"]}')
     if kwargs.get("no_sort"):
         cmd.append("--no-sort")
@@ -399,7 +401,7 @@ def _fzf_options(kwargs: _FzfOptions) -> list[str]:  # noqa: C901, PLR0915, PLR0
         cmd.append("--tac")
     if kwargs.get("disabled"):
         cmd.append("--disabled")
-    if "tiebreak" in kwargs and kwargs["tiebreak"]:
+    if kwargs.get("tiebreak"):
         cmd.append(f'--tiebreak={",".join(kwargs["tiebreak"])}')
 
     # Interface
@@ -407,103 +409,103 @@ def _fzf_options(kwargs: _FzfOptions) -> list[str]:  # noqa: C901, PLR0915, PLR0
     #     cmd.append(f'--multi={kwargs["multi"]}')
     if kwargs.get("no_mouse"):
         cmd.append("--no-mouse")
-    if "bind" in kwargs and kwargs["bind"]:
+    if kwargs.get("bind"):
         cmd.append(f'--bind={kwargs["bind"]}')
     if kwargs.get("cycle"):
         cmd.append("--cycle")
     if kwargs.get("keep_right"):
         cmd.append("--keep-right")
-    if "scroll_off" in kwargs and kwargs["scroll_off"]:
+    if kwargs.get("scroll_off"):
         cmd.append(f'--scroll-off={kwargs["scroll_off"]}')
     if kwargs.get("no_hscroll"):
         cmd.append("--no-hscroll")
-    if "hscroll_off" in kwargs and kwargs["hscroll_off"]:
+    if kwargs.get("hscroll_off"):
         cmd.append(f'--hscroll-off={kwargs["hscroll_off"]}')
     if kwargs.get("filepath_word"):
         cmd.append("--filepath-word")
-    if "jump_labels" in kwargs and kwargs["jump_labels"]:
+    if kwargs.get("jump_labels"):
         cmd.append(f'--jump-labels={kwargs["jump_labels"]}')
 
     # Layout
-    if "height" in kwargs and kwargs["height"]:
+    if kwargs.get("height"):
         cmd.append(f'--height={kwargs["height"]}')
-    if "min_height" in kwargs and kwargs["min_height"]:
+    if kwargs.get("min_height"):
         cmd.append(f'--min-height={kwargs["min_height"]}')
-    if "layout" in kwargs and kwargs["layout"]:
+    if kwargs.get("layout"):
         cmd.append(f'--layout={kwargs["layout"]}')
-    if "border" in kwargs and kwargs["border"]:
+    if kwargs.get("border"):
         cmd.append(f'--border={kwargs["border"]}')
-    if "border_label" in kwargs and kwargs["border_label"]:
+    if kwargs.get("border_label"):
         cmd.append(f'--border-label={kwargs["border_label"]}')
-    if "border_label_pos" in kwargs and kwargs["border_label_pos"]:
+    if kwargs.get("border_label_pos"):
         cmd.append(f'--border-label-pos={kwargs["border_label_pos"]}')
-    if "margin" in kwargs and kwargs["margin"]:
+    if kwargs.get("margin"):
         cmd.append(f'--margin={kwargs["margin"]}')
-    if "padding" in kwargs and kwargs["padding"]:
+    if kwargs.get("padding"):
         cmd.append(f'--padding={kwargs["padding"]}')
-    if "info" in kwargs and kwargs["info"]:
+    if kwargs.get("info"):
         cmd.append(f'--info={kwargs["info"]}')
-    if "separator" in kwargs and kwargs["separator"]:
+    if kwargs.get("separator"):
         cmd.append(f'--separator={kwargs["separator"]}')
     if kwargs.get("no_separator"):
         cmd.append("--no-separator")
-    if "scrollbar" in kwargs and kwargs["scrollbar"]:
+    if kwargs.get("scrollbar"):
         cmd.append(f'--scrollbar={kwargs["scrollbar"]}')
     if kwargs.get("no_scrollbar"):
         cmd.append("--no-scrollbar")
-    if "prompt" in kwargs and kwargs["prompt"]:
+    if kwargs.get("prompt"):
         cmd.append(f'--prompt={kwargs["prompt"]}')
-    if "pointer" in kwargs and kwargs["pointer"]:
+    if kwargs.get("pointer"):
         cmd.append(f'--pointer={kwargs["pointer"]}')
-    if "marker" in kwargs and kwargs["marker"]:
+    if kwargs.get("marker"):
         cmd.append(f'--marker={kwargs["marker"]}')
-    if "header" in kwargs and kwargs["header"]:
+    if kwargs.get("header"):
         cmd.append(f'--header={kwargs["header"]}')
-    if "header_lines" in kwargs and kwargs["header_lines"]:
+    if kwargs.get("header_lines"):
         cmd.append(f'--header-lines={kwargs["header_lines"]}')
     if kwargs.get("header_first"):
         cmd.append("--header-first")
-    if "ellipsis" in kwargs and kwargs["ellipsis"]:
+    if kwargs.get("ellipsis"):
         cmd.append(f'--ellipsis={kwargs["ellipsis"]}')
 
     # Display
     if kwargs.get("ansi"):
         cmd.append("--ansi")
-    if "tabstop" in kwargs and kwargs["tabstop"]:
+    if kwargs.get("tabstop"):
         cmd.append(f'--tabstop={kwargs["tabstop"]}')
-    if "color" in kwargs and kwargs["color"]:
+    if kwargs.get("color"):
         cmd.append(f'--color={kwargs["color"]}')
     if kwargs.get("no_bold"):
         cmd.append("--no-bold")
 
     # History
-    if "history" in kwargs and kwargs["history"]:
+    if kwargs.get("history"):
         cmd.append(f'--history={kwargs["history"]}')
-    if "history_size" in kwargs and kwargs["history_size"]:
+    if kwargs.get("history_size"):
         cmd.append(f'--history-size={kwargs["history_size"]}')
 
     # Preview
-    if "preview" in kwargs and kwargs["preview"]:
+    if kwargs.get("preview"):
         cmd.append(f'--preview={kwargs["preview"]}')
-    if "preview_window" in kwargs and kwargs["preview_window"]:
+    if kwargs.get("preview_window"):
         cmd.append(f'--preview-window={kwargs["preview_window"]}')
-    if "preview_label" in kwargs and kwargs["preview_label"]:
+    if kwargs.get("preview_label"):
         cmd.append(f'--preview-label={kwargs["preview_label"]}')
-    if "preview_label_pos" in kwargs and kwargs["preview_label_pos"]:
+    if kwargs.get("preview_label_pos"):
         cmd.append(f'--preview-label-pos={kwargs["preview_label_pos"]}')
 
     # Scripting
-    if "query" in kwargs and kwargs["query"]:
+    if kwargs.get("query"):
         cmd.append(f'--query={kwargs["query"]}')
     if kwargs.get("select_1"):
         cmd.append("--select-1")
     if kwargs.get("exit_0"):
         cmd.append("--exit-0")
-    if "filter" in kwargs and kwargs["filter"]:
+    if kwargs.get("filter"):
         cmd.append(f'--filter={kwargs["filter"]}')
     if kwargs.get("print_query"):
         cmd.append("--print-query")
-    if "expect" in kwargs and kwargs["expect"]:
+    if kwargs.get("expect"):
         cmd.append(f'--expect={kwargs["expect"]}')
     if kwargs.get("read0"):
         cmd.append("--read0")
@@ -511,9 +513,9 @@ def _fzf_options(kwargs: _FzfOptions) -> list[str]:  # noqa: C901, PLR0915, PLR0
         cmd.append("--print0")
     if kwargs.get("sync"):
         cmd.append("--sync")
-    if "listen" in kwargs and kwargs["listen"]:
+    if kwargs.get("listen"):
         cmd.append(f'--listen={kwargs["listen"]}')
-    if "additional_args" in kwargs and kwargs["additional_args"]:
+    if kwargs.get("additional_args"):
         cmd.extend(kwargs["additional_args"])
     return cmd
 
