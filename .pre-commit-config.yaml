@@ -1,5 +1,5 @@
 ci:
-  skip: [hatch-test, taplo, tox]
+  skip: [hatch-test, taplo]
 repos:
   - repo: https://github.com/ComPWA/mirrors-taplo
     rev: "v0.8.1"
@@ -11,7 +11,7 @@ repos:
       - id: reorder-python-imports
         args: [--py37-plus, --add-import, "from __future__ import annotations"]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+    rev: v0.3.3
     hooks:
       - id: ruff
         types_or: [python, pyi, jupyter]
@@ -28,23 +28,15 @@ repos:
       - id: name-tests-test
       - id: requirements-txt-fixer
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v1.9.0
     hooks:
       - id: mypy
         additional_dependencies: [types-all]
   - repo: local
     hooks:
-      - id: tox
-        name: tox
-        entry: tox run-parallel
-        language: python
-        additional_dependencies: ["tox"]
-        pass_filenames: false
-        always_run: true
-        types: [python]
       - id: hatch-test
         name: hatch-test
-        entry: hatch run --parallel all:test
+        entry: env HATCH_ENV_TYPE_VIRTUAL_PATH= hatch run --parallel all:test
         language: python
         additional_dependencies: [hatch]
         pass_filenames: false
