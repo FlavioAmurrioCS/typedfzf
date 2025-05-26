@@ -1,0 +1,9 @@
+{
+  "project_name": "typedfzf",
+  "project_slug": "fzf",
+  "project_short_description": "Yet another fzf wrapper.",
+  "minimum_python_version": "3.8",
+  "full_name": "Flavio Amurrio",
+  "email": "25621374+FlavioAmurrioCS@users.noreply.github.com",
+  "github_username": "FlavioAmurrioCS"
+}
