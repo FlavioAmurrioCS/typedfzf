@@ -159,7 +159,7 @@ def select_helper(
     if not lines:
         return empty_return
 
-    converted: list[T] = [dct[x] for x in lines] if dct else lines  # type:ignore
+    converted: list[T] = [dct[x] for x in lines] if dct else lines  # type:ignore[assignment]
     return converted if multi else converted[0]
 
 
@@ -518,7 +518,7 @@ def _fzf_options(kwargs: _FzfOptions) -> list[str]:  # noqa: C901, PLR0915, PLR0
 
 
 @overload
-def fzf(  # type:ignore
+def fzf(  # pyright: ignore[reportOverlappingOverload]
     iterable: Iterable[T],
     *,
     multi: Literal[False] = False,
@@ -554,10 +554,10 @@ def fzf(
     if multi:
         cmd.append("--multi")
 
-    return select_helper(
+    return select_helper(  # type:ignore[call-overload]
         cmd=cmd,
         items=iterable,
-        multi=multi,  # type:ignore
+        multi=multi,
         select_one=select_one,
         key=key,
     )
