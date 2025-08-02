@@ -7,8 +7,6 @@ import subprocess
 import typing
 from typing import TYPE_CHECKING
 from typing import Callable
-from typing import Iterable
-from typing import Sequence
 from typing import TypeVar
 from typing import overload
 
@@ -16,6 +14,8 @@ from typing_extensions import Literal
 from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
     from subprocess import _CMD
 
 
