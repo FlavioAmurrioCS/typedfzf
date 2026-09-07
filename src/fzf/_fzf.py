@@ -121,7 +121,7 @@ def select_helper(
         list[T] | T | None: The selected item(s).
 
     """  # noqa: E501
-    empty_return: None | list[T] = [] if multi else None
+    empty_return: list[T] | None = [] if multi else None
     sentinel = object()
     iterator = iter(items)
     _first_item = next(iterator, sentinel)
@@ -546,7 +546,7 @@ def fzf(
     select_one: bool = True,
     key: Callable[[T], str] | None = None,
     _options: _FzfOptions | None = None,
-) -> T | None | list[T]:
+) -> T | list[T] | None:
     _options = _options or {}
 
     _options["select_1"] = select_one
